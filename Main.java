@@ -11,8 +11,8 @@ public class Main {
 
         //Creamos el scanner para recibir inputs
         Scanner sc = new Scanner(System.in);
-        //Preguntamos por el número de nodos
-        System.out.println("¿Cuántos estados tiene su AFND?");
+        //Preguntamos por el numero de nodos
+        System.out.println("Cuantos estados tiene su AFND?");
         es = sc.nextInt();
         //Creamos los estados
         List<Estado> estados = new ArrayList<Estado>();
@@ -24,15 +24,15 @@ public class Main {
             estados.add(e);
         }
         //Pedimos que se indique el estado inicial
-        System.out.println("Coloque el índice del estado inicial:");
+        System.out.println("Coloque el indice del estado inicial:");
         int in = sc.nextInt();
         estados.get(in).inicial = true;
-        //Pedimos el estado de aceptación
-        System.out.println("Coloque el índice del estado de aceptación:");
+        //Pedimos el estado de aceptacion
+        System.out.println("Coloque el indice del estado de aceptacion:");
         int ac = sc.nextInt();
         estados.get(ac).aceptacion = true;
-        //Preguntamos por el número de símbolos del alfabetoo
-        System.out.println("Escriba el tamaño del alfabeto");
+        //Preguntamos por el numero de simbolos del alfabetoo
+        System.out.println("Escriba el tamanio del alfabeto");
         lenSize = sc.nextInt();
         sc.nextLine();
         //Pedimos que se introduzcan todos separados por coma
@@ -88,6 +88,87 @@ public class Main {
                 }
             }
 
+        }
+        
+        
+        int counter = 0;
+        
+        ArrayList<ArrayList<Estado>> estadosDFA = new ArrayList<ArrayList<Estado>>();
+        ArrayList<Estado> inicial = new ArrayList<Estado>();
+
+        inicial.add(estados.get(in));
+        estadosDFA.add(inicial);
+        
+        while(counter < estadosDFA.size())
+        {   
+            ArrayList<Estado> estadoDestino = new ArrayList<Estado>();
+            ArrayList<Estado> listEstado = estadosDFA.get(counter);
+            for (Estado estado : listEstado)
+            {
+                for (String symbol : len)
+                {
+                    // Iterate transitions for this state
+                    for (Transicion trans : estado.transiciones)
+                    {
+                        if(symbol == trans.simbolo)
+                        {
+                            
+                            for(Estado destino : trans.desitnos)
+                            {
+                                if(!estadoDestino.contains(destino))
+                                {
+                                    estadoDestino.add(destino);
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+            counter++;
+        }
+        
+        
+        // Imprime resultado
+        for (ArrayList<Estado> listaEstado : estadosDFA)
+        {
+            String estadosOrigen = "";
+            for (Estado estado : listaEstado)
+            {
+                estadosOrigen += estado.id + ", ";
+            }
+            
+            
+            System.out.println("Origen: " + estadosOrigen);
+            for (String symbol : len)
+            {
+                ArrayList<Estado> estadoDestino = new ArrayList<Estado>();
+                for (Estado estado : listaEstado)
+                {
+                    // Iterate transitions for this state
+                    for (Transicion trans : estado.transiciones)
+                    {
+                        if(symbol == trans.simbolo)
+                        {
+                            
+                            for(Estado destino : trans.desitnos)
+                            {
+                                if(!estadoDestino.contains(destino))
+                                {
+                                    estadoDestino.add(destino);
+                                }
+
+                            }
+                        }
+                    }
+                }
+                System.out.println(symbol);
+                for (Estado e : estadoDestino)
+                {
+                    System.out.println(e.id);
+                }
+                System.out.println();
+            }
         }
     }
 }

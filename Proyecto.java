@@ -1,7 +1,6 @@
 import java.util.*;
 import java.awt.*;
 
-//
 // Untitled.java
 // Created by Alister Estrada Cueto on 11/2/18.
 
@@ -9,25 +8,27 @@ public class Proyecto {
 	
 	public static void main(String[] args) {
 		
-		Scanner sc = new Scanner(System.in);
-		LinkedHashSet<Character> set = new LinkedHashSet<Character>();
-		Lenguaje lenguaje = new Lenguaje(set);
+		Automata automata = new Automata();
 		
-		String lenguajeString;
+		/*Scanner sc = new Scanner(System.in);
+		LinkedHashSet<Character> set = new LinkedHashSet<Character>();
+		Alfabeto Alfabeto = new Alfabeto(set);
+		
+		String AlfabetoString;
 		String estadosString;
 		String inicialString;
 		String estadosFinalesPorEstado;
 		
-		System.out.println("Ingrese el lenguaje aceptado");
+		System.out.println("Ingrese el Alfabeto aceptado");
 	
-		lenguajeString = sc.nextLine();
+		AlfabetoString = sc.nextLine();
 		
-		for (int i = 0; i < lenguajeString.length() ; i++) {
-			lenguaje.simbolos.add(lenguajeString.toCharArray()[i]);
+		for (int i = 0; i < AlfabetoString.length() ; i++) {
+			Alfabeto.simbolos.add(AlfabetoString.toCharArray()[i]);
 			
-		}
+		}*/
 		
-		System.out.println("Ingrese los estados ");
+		/*System.out.println("Ingrese los estados ");
 		estadosString = sc.nextLine();
 		String[] parts = estadosString.split(" ");
 		
@@ -36,25 +37,25 @@ public class Proyecto {
 		for (int i = 0; i < parts.length ; i++) {
 			Estado inicial = new Estado(parts[i]);
 			estados.add(inicial);
-		}
+		}*/
 
 		
-		System.out.println("Ingrese el estado inicial ");
+		/*System.out.println("Ingrese el estado inicial ");
 		inicialString = sc.nextLine();		
 		
-		Estado inicial = new Estado(inicialString);
+		Estado inicial = new Estado(inicialString);*/
 		
-		ArrayList<Estado> list = new ArrayList<Estado>();
+		/*ArrayList<Estado> list = new ArrayList<Estado>();
 		ArrayList<Character> list2 = new ArrayList<Character>();
 		
 		list.addAll(estados);
-		list2.addAll(lenguaje.simbolos);
+		list2.addAll(Alfabeto.simbolos);
 		
-		LinkedHashSet<Transiciones> tablaTransiciones = new LinkedHashSet<Transiciones>();
+		LinkedHashSet<Transicion> tablaTransicion = new LinkedHashSet<Transicion>();
 		
 		for (int i = 0; i < estados.size(); i++) {		
 			
-			for (int j = 0; j < lenguaje.simbolos.size() ; j++) {
+			for (int j = 0; j < Alfabeto.simbolos.size() ; j++) {
 				
 				System.out.println("Para el estado " + list.get(i) + " leyendo " + list2.get(j) + " llega a  :" );
 				estadosFinalesPorEstado = sc.nextLine();
@@ -73,9 +74,9 @@ public class Proyecto {
 				LinkedHashSet<Estado> estado3 = new LinkedHashSet<Estado>();
 				estado3.add(list.get(i));
 				
-				Transiciones transiciones = new Transiciones(estado3, estados2, list2.get(j));
+				Transicion Transicion = new Transicion(estado3, estados2, list2.get(j));
 				
-				tablaTransiciones.add(transiciones);
+				tablaTransicion.add(Transicion);
 			}
 			
 		}
@@ -92,10 +93,10 @@ public class Proyecto {
 			estadosAceptacion.add(e);
 		}
 		
-		Automata automata = new Automata(estados, lenguaje, inicial, estadosAceptacion, tablaTransiciones);
+		Automata automata = new Automata(estados, Alfabeto, inicial, estadosAceptacion, tablaTransicion);
 		
 		
-		System.out.println(automata.toString());
+		System.out.println(automata.toString());*/
 		
 	}
 	
@@ -103,10 +104,10 @@ public class Proyecto {
 	
 	// Clases 
 	
-	public static class Lenguaje{
+	public static class Alfabeto{
 		private LinkedHashSet<Character> simbolos = new LinkedHashSet<Character>();
 
-		public Lenguaje(LinkedHashSet<Character> simbolos){
+		public Alfabeto(LinkedHashSet<Character> simbolos){
 			this.simbolos = simbolos;
 		}
 		
@@ -120,19 +121,110 @@ public class Proyecto {
 	
 	public static class Automata{
 		
-		private Lenguaje lenguaje;
+		Scanner sc = new Scanner(System.in);
+		private Alfabeto alfabeto;
 		private LinkedHashSet<Estado> estados = new LinkedHashSet<Estado>(); 
 		private Estado estadoInicial;
 		private LinkedHashSet<Estado> estadosAceptacion = new LinkedHashSet<Estado>(); 
-		private LinkedHashSet<Transiciones> funcionesTransicion = new LinkedHashSet<Transiciones>(); 
+		private LinkedHashSet<Transicion> funcionesTransicion = new LinkedHashSet<Transicion>(); 
 		
-		public Automata(LinkedHashSet<Estado> estados , Lenguaje lenguaje, Estado estadoInicial, LinkedHashSet<Estado> estadosAceptacion, LinkedHashSet<Transiciones> funcionesTransicion){
+		
+        ArrayList<Estado> listaEstados = new ArrayList<Estado>();
+		ArrayList<Character> listaSimbolos = new ArrayList<Character>();
+		
+		public Automata()
+		{
+            insertAlfabeto();
+            insertEstados();
+            setEstadoInicial();
+            setTransiciones();
+		}
+		
+		
+		private void insertAlfabeto()
+		{
+            System.out.println("Ingrese el alfabeto aceptado");
+            String alfabetoString = sc.nextLine();
+            
+            for (int i = 0; i < alfabetoString.length() ; i++) {
+                System.out.println(alfabetoString.toCharArray()[i]);
+                //alfabeto.simbolos.add(alfabetoString[i]);
+                alfabeto.simbolos.add(alfabetoString.toCharArray()[i]);
+                
+                
+            }
+		}
+		
+		private void insertEstados()
+		{
+            System.out.println("Ingrese los estados ");
+            String estadosString = sc.nextLine();
+            String[] parts = estadosString.split(" ");
+            
+            
+            LinkedHashSet<Estado> estados = new LinkedHashSet<Estado>(); 
+            for (int i = 0; i < parts.length ; i++) {
+                Estado inicial = new Estado(parts[i]);
+                estados.add(inicial);
+            }
+		}
+		
+		private void setEstadoInicial()
+		{
+            System.out.println("Ingrese el estado inicial ");
+            String inicialString = sc.nextLine();		
+            estadoInicial = new Estado(inicialString);
+		}
+		
+		private void setTransiciones()
+		{
+            for(Estado e : estados)
+            {
+                System.out.println(e);
+            }
+            //LinkedHashSet<Transicion> tablaTransicion = new LinkedHashSet<Transicion>();
+            /*for (int i = 0; i < estados.size(); i++) {		
+                
+                for (int j = 0; j < alfabeto.simbolos.size() ; j++) {
+                    
+                    System.out.println("Para el estado " + list.get(i) + " leyendo " + list2.get(j) + " llega a  :" );
+                    estadosFinalesPorEstado = sc.nextLine();
+                    
+                    String[] estadosSeparados = estadosFinalesPorEstado.split(" ");
+
+                    
+                    LinkedHashSet<Estado> estadosDestino = new LinkedHashSet<Estado>(); 
+                    for (int k = 0; k < estadosSeparados.length ; k++) {
+                        Estado e = new Estado(estadosSeparados[k]);
+                        
+                        
+                        
+                        
+                        
+                        estadosDestino.add(e);
+                    }
+                    
+                    LinkedHashSet<Estado> estado3 = new LinkedHashSet<Estado>();
+                    estado3.add(list.get(i));
+                    
+                    Transicion Transicion = new Transicion(estado3, estados2, list2.get(j));
+                    
+                    tablaTransicion.add(Transicion);
+                }
+                
+            }*/
+		}
+		
+		
+		
+		
+		/*public Automata(LinkedHashSet<Estado> estados , Alfabeto Alfabeto, Estado estadoInicial, LinkedHashSet<Estado> estadosAceptacion, LinkedHashSet<Transicion> funcionesTransicion){
 			this.estados=estados;
-			this.lenguaje= lenguaje;
+			this.Alfabeto= Alfabeto;
 			this.estadoInicial = estadoInicial;
 			this.estadosAceptacion = estadosAceptacion;
 			this.funcionesTransicion = funcionesTransicion;
-		}
+		}*/
 		
 		@Override
 		public String toString(){
@@ -142,7 +234,7 @@ public class Proyecto {
 			builder.append("La lista de estados en el automata es :" + estados.toString() +"\n");
 			builder.append("El estado inicial del automata es " + estadoInicial.toString() +"\n");
 			builder.append("Los estados de aceptacion del automata son " + estadosAceptacion.toString() +"\n");
-			builder.append("El lenguaje acpetado por el autoamta es " + lenguaje.toString() +"\n");
+			builder.append("El alfabeto acpetado por el autoamta es " + alfabeto.toString() +"\n");
 			builder.append("La tabla de transicion del automata es "+"\n");
 			builder.append("Estado Origen"  +"\t Simbolo Leido "+"\tEstado que Llega"+"\n");
 			builder.append(funcionesTransicion.toString());
@@ -159,13 +251,13 @@ public class Proyecto {
 	}
 	
 	
-	public static class Transiciones{
+	public static class Transicion{
 		
 		private LinkedHashSet<Estado> estadoInicial = new LinkedHashSet<Estado>();
 		private LinkedHashSet<Estado> estadosFinales = new LinkedHashSet<Estado>(); 
 		private char simboloLeido;
 		
-		public Transiciones(LinkedHashSet<Estado> estadoInicial , LinkedHashSet<Estado> estadosFinales, char simboloLeido){
+		public Transicion(LinkedHashSet<Estado> estadoInicial , LinkedHashSet<Estado> estadosFinales, char simboloLeido){
 			this.estadoInicial = estadoInicial;
 			this.estadosFinales = estadosFinales;
 			this.simboloLeido = simboloLeido;
@@ -188,11 +280,15 @@ public class Proyecto {
 	
 	public static class Estado{
 		
-		private  String nombreDelEstado;
 		
+		private  String nombreDelEstado;
+		private Transicion[] transiciones;
+		private LinkedHashSet<Estado> subestados;
+ 		
 		public Estado(String nombreDelEstado){
 			this.nombreDelEstado=nombreDelEstado;
 		}
+		
 		
 		
 		
