@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 import java.util.HashSet;
 
@@ -10,7 +9,7 @@ public class Automata {
     private HashSet<HashSet<State>> statesDFA;
     private ArrayList<State> statesNDFA;
     HashSet<State> initialState;
-    
+    HashSet<State> finalStates;
     
     public Automata()
     {
@@ -36,7 +35,6 @@ public class Automata {
         System.out.println("Coloque el indice del estado inicial:");
         int in = scanner.nextInt();
         scanner.nextLine();
-        statesNDFA.get(in).inicial = true;
         initialState = new HashSet<State>();
         initialState.add(statesNDFA.get(in));
     }
@@ -44,11 +42,15 @@ public class Automata {
     // Ask for amount and indices of acceptance states separated by comma
     public void setAcceptanceStates()
     {
-        //Pedimos el estado de aceptacion
-        System.out.println("Coloque el indice del estado de aceptacion: ");
-        int ac = scanner.nextInt();
-        scanner.nextLine();
-        statesNDFA.get(ac).aceptacion = true;
+        System.out.println("Introduzca los indices de los estados de aceptacion separados por comas: ");
+        String indices = scanner.nextLine();
+        String[] indicesArr = indices.split(","); 
+        finalStates = new HashSet<State>();
+    
+        for (String index : indicesArr)
+        {
+            finalStates.add(statesNDFA.get(Integer.parseInt(index)));
+        }
     }
     
     // Ask for amount and elements of the alphabet separated by comma
@@ -101,14 +103,6 @@ public class Automata {
     {
         for (String symbol : alphabet)
         {
-            /*HashSet<State> destinationSet= new HashSet<State>();
-            
-            // Find destination set as Union of all destinationSets of all originStates in this Set when receiving a specific symbol
-            for (State originState : originSet)
-            {
-                if(originState.transitions.containsKey(symbol))
-                    destinationSet.addAll(originState.transitions.get(symbol));
-            }*/
             HashSet<State> destinationSet = findDestinationSetWithSymbol(originSet, symbol);
             
             // If this element is not already contained add elements to the DFA Origin Set
@@ -134,18 +128,81 @@ public class Automata {
         return destinationSet;
     }
     
+    // Helper function to check a state in the state set is final
+    private boolean hasFinalState(HashSet<State> originSet)
+    {
+        for (State finalState : finalStates)
+        {
+            if (originSet.contains(finalState))
+                return true;
+        }
+        return false;
+    }
     
     @Override
     public String toString()
     {
-        String result = "";
-        result += "---\n";
+        String result = "\n";
+        result += "----\n";
+        result += "NDFA\n";
+        result += "----\n\n";
+        
+        for (State state : statesNDFA)
+        {
+            HashSet<State> originSet = new HashSet<State>();
+            originSet.add(state);
+            
+            for (State inState : initialState)
+            {
+                //Check if state is initial
+                if(state==inState)
+                    result += "->";
+                else
+                    result += "  ";
+                break;
+            }
+            
+            //Check if state is final
+            if (hasFinalState(originSet))
+                result+="*";
+            else
+                result+=" ";
+            
+            result+= state;
+            result += " | ";
+            
+            
+            for (String symbol : alphabet)
+            {
+
+
+                
+                result += symbol + ": ";
+                result += findDestinationSetWithSymbol(originSet, symbol);
+                result += " | ";
+            }
+            result += "\n";
+        }
+        
+        result += "\n---\n";
         result += "DFA\n";
         result += "---\n\n";
         
         int newStateIndex = 0;
         for (HashSet<State> originSet : statesDFA)
         {
+            //Check if state is initial
+            if (originSet == initialState)
+                result += "->";
+            else
+                result += "  ";
+            
+            //Check if state is final
+            if (hasFinalState(originSet))
+                result+="*";
+            else
+                result+=" ";
+            
             result += "c" + newStateIndex + " | ";
             result += originSet;
             result += " | ";
@@ -163,6 +220,4 @@ public class Automata {
 
         return result;
     }
-    
-    
 }

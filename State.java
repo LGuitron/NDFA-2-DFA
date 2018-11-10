@@ -5,10 +5,6 @@ import java.util.HashSet;
 public class State {
     
     public String id;
-    public boolean isInitial;
-    public boolean isAccepted;
-    
-    public boolean inicial, aceptacion;    
     HashMap<String, HashSet<State>> transitions = new HashMap<String, HashSet<State>>();
 
     public State(String id)
