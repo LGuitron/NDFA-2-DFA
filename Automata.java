@@ -71,11 +71,6 @@ public class Automata {
                 String ans = scanner.nextLine();
 
                 if (ans.equals("y")) {
-
-                    System.out.println("Escriba el numero de estados de la transicion: ");
-                    int tranLen = scanner.nextInt();
-                    scanner.nextLine();
-
                     System.out.println("Introduzca el indice de los estados a los que va separados por coma: ");
                     String destinationIndices      = scanner.nextLine();
                     String[] destinationIndicesArr = destinationIndices.split(",");
