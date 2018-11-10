@@ -6,10 +6,10 @@ public class Automata {
 
     private Scanner scanner;
     public String[] alphabet;
-    private HashSet<HashSet<State>> statesDFA;
+    public HashSet<HashSet<State>> statesDFA;
     public ArrayList<State> statesNDFA;
-    HashSet<State> initialState;
-    HashSet<State> finalStates;
+    public HashSet<State> initialState;
+    public HashSet<State> finalStates;
     
     public Automata()
     {
@@ -134,10 +134,11 @@ public class Automata {
     
     public void addTransitionGUI(String transition)
     {
-      String[] elements          = transition.split("|"); 
+      String[] elements          = transition.split("-"); 
       String i                  = elements[0];
       String symbol             = elements[1]; 
       String destinationIndices = elements[2]; 
+      
       String[] destinationIndicesArr = destinationIndices.split(",");
       HashSet<State> destinations = new HashSet<State>();
       for (String index : destinationIndicesArr)
@@ -171,7 +172,7 @@ public class Automata {
     }
     
     // Helper function for getting resulting set given an origin set and an input
-    private HashSet<State> findDestinationSetWithSymbol(HashSet<State> originSet, String symbol)
+    public HashSet<State> findDestinationSetWithSymbol(HashSet<State> originSet, String symbol)
     {
         HashSet<State> destinationSet= new HashSet<State>();
 

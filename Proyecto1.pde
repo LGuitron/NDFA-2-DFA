@@ -1,4 +1,6 @@
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 // Automata Object
 Automata automata;
@@ -49,14 +51,45 @@ String finalStates;
 String alphabet;
 
 // General visual automata parameters
-int nodeRadius;
+int nodeWidth;
 int distFromCenter;
 int textOffsetX;
 int textOffsetY;
+int triangleSize;
 
 // NDFA automata visual parameters
 int centerX_NDFA;
 int centerY_NDFA;
+int[] xCoordsNDFA;
+int[] yCoordsNDFA;
+
+// DFA automata visual parameters
+int centerX_DFA;
+int centerY_DFA;
+int[] xCoordsDFA;
+int[] yCoordsDFA;
+
+// Arrow offset to avoid overlapping when going both ways
+int arrowVerticalOffset;
+
+
+// Default Triangle coordinates for arrow point
+int tx1;
+int ty1;
+int tx2;
+int tx3;
+int ty23;
+
+// Booleans used to determine when to calculate DFA
+boolean hasStates;
+boolean hasInitial;
+boolean hasFinal;
+boolean hasAlphabet;
+boolean hasTransitions;
+boolean displayDFA;
+
+// Mapping from arraylist of ids to index of each DFA node//
+HashMap<String, Integer> stateMap;
 
 void setup() {
   fullScreen();
@@ -76,7 +109,7 @@ void setup() {
   alphabetButtonX = 4*width/6 + width/20;
   transitionButtonX = 5*width/6 + width/20;
  
-  textColor = color(0);
+  textColor = color(255);
   textSize(16);
   
   rectMode(CORNER);
@@ -87,7 +120,7 @@ void setup() {
   instantiateBox(1, "Introduce el indice del estado inicial");
   instantiateBox(2, "Introduce los indices de los estados de aceptacion separados por comas");
   instantiateBox(3, "Introduce los simbolos del alfabeto separados por coma");
-  instantiateBox(4, "Introduce una transicion con el formato  origen|simbolo|destino   e.g.         0|s|1,2");
+  instantiateBox(4, "Introduce una transicion con el formato  origen-simbolo-destino   e.g.         0-s-1,2");
   
   for (int i=0; i<5; i++){
     textBoxes[i].isFocused = true;
@@ -101,19 +134,38 @@ void setup() {
   finalStates  = "[]";
   alphabet     = "[]"; 
   
-  nodeRadius     = 60;
+  nodeWidth     = 60;
   distFromCenter = 150;
   
   textOffsetX = 10;
   textOffsetY = 5;
+  triangleSize = 10;
+  
+  tx1 = 0;
+  ty1 = 0;
+  tx2 = tx1 -  (int)Math.sqrt(triangleSize*triangleSize/2);
+  tx3 = tx1 +  (int)Math.sqrt(triangleSize*triangleSize/2);
+  ty23 = ty1 + (int)Math.sqrt(triangleSize*triangleSize/2);
   
   centerX_NDFA = width/4;
   centerY_NDFA = 2*height/3;
+  
+  centerX_DFA = 3*width/4;
+  centerY_DFA = 2*height/3;
+  
+  arrowVerticalOffset = 15;
+  
+  hasStates = false;
+  hasInitial = false;
+  hasFinal = false;
+  hasAlphabet = false;
+  hasTransitions = false;
+  displayDFA = false;
 }
 
 void draw() {
   update(mouseX, mouseY);
-  background(102);
+  background(150);
   stroke(255);
 
   setFillColor(statesOver);
@@ -138,7 +190,7 @@ void draw() {
   {
     textBoxes[state-1].display();
   }
-  
+  fill(0);
   text("Q = " + statesNDFA, infoX , infoY);
   text("q0 = " + initialState, infoX , 2*infoY); 
   text("F = " + finalStates, infoX , 3*infoY); 
@@ -146,6 +198,9 @@ void draw() {
   
   fill(255,165,0);
   drawNDFA();
+  if(displayDFA){
+    drawDFA();
+  }
 }
 
 void update(int x, int y) {
@@ -194,6 +249,7 @@ void mouseClicked() {
     state = alphabetStateBox;
   }
    if(transitionOver){
+    textBoxes[transitionStateBox-1].txt = "";
     state = transitionStateBox;
   }
 }
@@ -330,21 +386,46 @@ class TextBox {
       // this ends the entering 
       println("RET ");
       
-      
       if(state == stateInputBox){
         statesNDFA = automata.createStatesGUI(Integer.parseInt(txt));
+        calculatePositionsNDFA();
+        if(automata.statesNDFA != null)
+          hasStates = true;
+         else
+           hasStates = false;
       }
       else if(state == stateInitialStateBox){
         initialState = automata.setInitialStateGUI(Integer.parseInt(txt)); 
+        if(automata.initialState != null)
+          hasInitial = true;
+         else
+           hasInitial = false;
       }
       else if(state == stateFinalStateBox){
         finalStates = automata.setAcceptanceStatesGUI(txt); 
+        if(automata.finalStates != null)
+          hasFinal = true;
+         else
+           hasFinal = false;
       }
       else if(state == alphabetStateBox){
-        alphabet = automata.setAlphabetGUI(txt); 
+        alphabet = automata.setAlphabetGUI(txt);
+        if(automata.alphabet != null)
+          hasAlphabet = true;
+         else
+           hasAlphabet = false;
       }
       else if(state == transitionStateBox){
         automata.addTransitionGUI(txt); 
+        hasTransitions = true;
+      }
+      
+      // If all inputs have been introduced calculate DFA
+      if(hasStates && hasInitial && hasFinal && hasAlphabet && hasTransitions)
+      {
+         automata.convertToDFA();
+         calculatePositionsDFA();
+         displayDFA = true;
       }
       
       state  = stateNormal; // close input box 
@@ -381,23 +462,58 @@ class TextBox {
   }
 }
 
+// Function for calculating node positions of NDFA
+void calculatePositionsNDFA()
+{
+   xCoordsNDFA = new int[automata.statesNDFA.size()];
+   yCoordsNDFA = new int[automata.statesNDFA.size()];
+   double deltaAngle =  2*Math.PI/automata.statesNDFA.size();
+   double currentAngle = 0;
+    for (int i=0; i<automata.statesNDFA.size();i++)
+    {
+       //State state = automata.statesNDFA.get(i);
+       int offsetX = (int)(distFromCenter*Math.cos(currentAngle));
+       int offsetY = (int)(distFromCenter*Math.sin(currentAngle));
+       xCoordsNDFA[i] = centerX_NDFA + offsetX;
+       yCoordsNDFA[i] = centerY_NDFA + offsetY;
+       currentAngle += deltaAngle;
+    }
+}
+
+void calculatePositionsDFA()
+{
+   stateMap = new HashMap<String, Integer>();
+   xCoordsDFA = new int[automata.statesDFA.size()];
+   yCoordsDFA = new int[automata.statesDFA.size()];
+   double deltaAngle =  2*Math.PI/automata.statesDFA.size();
+   double currentAngle = 0;
+   
+    int i = 0;
+    for (HashSet<State> stateSet : automata.statesDFA)
+    {
+       int offsetX = (int)(distFromCenter*Math.cos(currentAngle));
+       int offsetY = (int)(distFromCenter*Math.sin(currentAngle));
+       xCoordsDFA[i] = centerX_DFA + offsetX;
+       yCoordsDFA[i] = centerY_DFA + offsetY;
+       stateMap.put(stateSet.toString(), i);
+       System.out.println("K: " + stateSet.toString() + " v: " + i);
+       currentAngle += deltaAngle;
+       i++;
+    }
+}
+
 // Function for drawing automata
 void drawNDFA()
 {
   if (automata.statesNDFA.size()>0)
   {
-    //Angle difference between nodes
-    double deltaAngle =  2*Math.PI/automata.statesNDFA.size();
-    double currentAngle = 0;
-    for (State state : automata.statesNDFA)
+    for (int i=0; i<automata.statesNDFA.size();i++)
     {
-      int offsetX = (int)(distFromCenter*Math.cos(currentAngle));
-      int offsetY = (int)(distFromCenter*Math.sin(currentAngle));
-      ellipse(centerX_NDFA + offsetX, centerY_NDFA + offsetY, nodeRadius, nodeRadius);
+      State state = automata.statesNDFA.get(i);
+      ArrayList<String> loopSymbols = new ArrayList<String>();
       
       fill(0);
-      
-      // Checl there are elements in the alphabet
+      stroke(0);
       if(automata.alphabet != null)
       {
         // Draw arrows for each transition
@@ -406,15 +522,203 @@ void drawNDFA()
           HashSet<State> destinationStates = state.transitions.get(symbol);
           if (destinationStates != null)
           {
-            System.out.println("NOT NULL");
-            text(symbol + ": " + destinationStates.toString(), centerX_NDFA + offsetX - textOffsetX , centerY_NDFA + offsetY + 100); 
-            
+            // Draw individual lines with corresponding symbol at the middle
+            for (State destState : destinationStates)
+            {
+
+              
+              int x1 = xCoordsNDFA[i];
+              int y1 = yCoordsNDFA[i];
+              int x2 = xCoordsNDFA[Integer.parseInt(destState.id)];
+              int y2 = yCoordsNDFA[Integer.parseInt(destState.id)];
+              float angle = (float)Math.atan2(y2-y1,x2-x1);          // Angle between nodes
+              
+              // Arrow vertical offset to avoid overlapping arrows
+              int verticalOffset = arrowVerticalOffset;
+              
+              if (x1 < x2){
+                verticalOffset = -verticalOffset;
+              }
+              
+              // Draw arrow if nodes are different
+              if(i != Integer.parseInt(destState.id))
+              {
+                int arrowOffsetX = (int)(-nodeWidth/2 * Math.cos(angle));
+                int arrowOffsetY = (int)(-nodeWidth/2 * Math.sin(angle));
+                
+                line(x1, y1+verticalOffset, x2+arrowOffsetX, y2+arrowOffsetY+verticalOffset);
+                text(symbol,(x1+x2)/2 , (y1+y2)/2 + verticalOffset);
+                
+                // Draw triangle in correct place by rotating and translating
+                pushMatrix();
+                translate(x2 + arrowOffsetX, y2 + arrowOffsetY+verticalOffset);                                 
+                rotate((float)Math.PI/2 + angle);
+                triangle(tx1,ty1, tx2, ty23, tx3, ty23);
+                popMatrix();
+              }
+              
+              // Add symbol to array of loopSymbols
+              else{
+                loopSymbols.add(symbol);
+              }
+            }
+
           }
         }
       }
-      text(state.toString(), centerX_NDFA + offsetX - textOffsetX , centerY_NDFA + offsetY + textOffsetY); 
+      
+      // Add "Loops" text on the right side if transition goes to the same node
+      if(loopSymbols.size()>0){
+         text("loops: " + loopSymbols, xCoordsNDFA[i] + 0.75*nodeWidth, yCoordsNDFA[i]);
+      }
+      
+      // Draw arrow for initial state
+      if(automata.initialState != null)
+      {
+        for (State inState : automata.initialState)
+        {
+          if(state == inState)
+          {
+            line(xCoordsNDFA[i] - 1.2*nodeWidth,yCoordsNDFA[i],xCoordsNDFA[i]- 0.5*nodeWidth,yCoordsNDFA[i]);
+            pushMatrix();
+            translate(xCoordsNDFA[i] - 0.5*nodeWidth, yCoordsNDFA[i]);                                 
+            rotate((float)Math.PI/2);
+            triangle(tx1,ty1, tx2, ty23, tx3, ty23);
+            popMatrix();
+          }
+         break;
+        }
+      }
+      
       fill(255,165,0);
-      currentAngle += deltaAngle;
+      ellipse(xCoordsNDFA[i], yCoordsNDFA[i], nodeWidth, nodeWidth);
+      fill(0);
+      text(state.toString(), xCoordsNDFA[i] - textOffsetX , yCoordsNDFA[i] + textOffsetY); 
+      
+      //Draw circle outline for final states
+      if(automata.finalStates != null)
+      {
+        for (State acState : automata.finalStates)
+        {
+          if(state == acState)
+          {
+            fill(0,0,0,1);
+            ellipse(xCoordsNDFA[i], yCoordsNDFA[i], nodeWidth-10, nodeWidth-10);
+            break;
+          }
+        }
+      }
+      fill(0);
     }
   }
+}
+
+// Function for drawing automata
+void drawDFA()
+{
+    int i = 0;
+    
+    for (HashSet<State> stateSet : automata.statesDFA)
+    {   
+        fill(0);
+        ArrayList<String> loopSymbols = new ArrayList<String>();
+        for(String symbol : automata.alphabet)
+        {
+           
+           HashSet<State> destinationSet = automata.findDestinationSetWithSymbol(stateSet, symbol);
+           if(destinationSet.size()>0)
+           {
+              int destIndex = stateMap.get(destinationSet.toString());
+              int x1 = xCoordsDFA[i];
+              int y1 = yCoordsDFA[i];
+              int x2 = xCoordsDFA[destIndex];
+              int y2 = yCoordsDFA[destIndex];
+              float angle = (float)Math.atan2(y2-y1,x2-x1);          // Angle between nodes
+              
+              // Arrow vertical offset to avoid overlapping arrows
+              int verticalOffset = arrowVerticalOffset;
+              
+              if (x1 < x2){
+                verticalOffset = -verticalOffset;
+              }
+              
+              // Draw arrow if nodes are different
+              if(stateSet.toString() != destinationSet.toString())
+              {
+                int arrowOffsetX = (int)(-nodeWidth/2 * Math.cos(angle));
+                int arrowOffsetY = (int)(-nodeWidth/2 * Math.sin(angle));
+                
+                line(x1, y1+verticalOffset, x2+arrowOffsetX, y2+arrowOffsetY+verticalOffset);
+                text(symbol,(x1+x2)/2 , (y1+y2)/2 + verticalOffset);
+                
+                // Draw triangle in correct place by rotating and translating
+                pushMatrix();
+                translate(x2 + arrowOffsetX, y2 + arrowOffsetY+verticalOffset);                                 
+                rotate((float)Math.PI/2 + angle);
+                triangle(tx1,ty1, tx2, ty23, tx3, ty23);
+                popMatrix();
+              }
+              
+              // Add symbol to array of loopSymbols
+              else{
+                loopSymbols.add(symbol);
+              }
+           }
+       }
+       
+      // Add "Loops" text on the right side if transition goes to the same node
+      if(loopSymbols.size()>0){
+         text("loops: " + loopSymbols, xCoordsNDFA[i] + 0.75*nodeWidth, yCoordsNDFA[i]);
+      }
+       
+      // Draw arrow for initial state
+      for (State inState : automata.initialState)
+      {
+        for (State currentState : stateSet)
+        { 
+          
+          if(currentState.id == inState.id)
+          {
+            System.out.println("HERE");
+            line(xCoordsDFA[i] - 1.2*nodeWidth,yCoordsDFA[i],xCoordsDFA[i]- 0.5*nodeWidth,yCoordsDFA[i]);
+            pushMatrix();
+            translate(xCoordsDFA[i] - 0.5*nodeWidth, yCoordsDFA[i]);                                 
+            rotate((float)Math.PI/2);
+            triangle(tx1,ty1, tx2, ty23, tx3, ty23);
+            popMatrix();
+          }
+          break;
+        }
+       break;
+      }
+       
+       
+       fill(255,165,0);
+       ellipse(xCoordsDFA[i], yCoordsDFA[i], nodeWidth, nodeWidth);
+       
+       // Draw rectange representing set from NDFA
+       rect(xCoordsDFA[i] - nodeWidth/2, yCoordsDFA[i] + nodeWidth/2, nodeWidth, nodeWidth/3);
+       
+       fill(0);
+       textSize(12);
+       text(stateSet.toString(), xCoordsDFA[i] - nodeWidth/3  - textOffsetX, yCoordsDFA[i] + 3*nodeWidth/4);
+       textSize(16);
+       text("c" + i, xCoordsDFA[i]  - textOffsetX, yCoordsDFA[i] + textOffsetY);
+       
+      //Draw circle outline for states that contain any of the final states
+      for (State currentState : stateSet)
+      { 
+        for (State acState : automata.finalStates)
+        {
+          if(currentState.id == acState.id)
+          {
+            fill(0,0,0,1);
+            ellipse(xCoordsDFA[i], yCoordsDFA[i], nodeWidth-10, nodeWidth-10);
+            break;
+          }
+        }
+      }
+      fill(0);
+      i++;
+    }
 }
