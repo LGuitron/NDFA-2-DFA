@@ -7,29 +7,41 @@ public class Automata {
     private Scanner scanner;
     private String[] alphabet;
     private HashSet<HashSet<State>> statesDFA;
-    private ArrayList<State> statesNDFA;
+    public ArrayList<State> statesNDFA;
     HashSet<State> initialState;
     HashSet<State> finalStates;
     
     public Automata()
     {
+        statesNDFA = new ArrayList<State>();
         scanner = new Scanner(System.in);
     }
     
-    //Create states from 0 to n-1 with user input
+    //Create states from 0 to n-1 with console input
     public void createStates()
     {
         System.out.println("Cuantos estados tiene su AFND?");
         int stateAmount = scanner.nextInt();
-        
-        statesNDFA = new ArrayList<State>();
         for (int i = 0; i < stateAmount; i++) {
             State state = new State(Integer.toString(i));
             statesNDFA.add(state);
         }
     }
     
-    // Ask for initial state index
+    // Create states from processing GUI
+    public String createStatesGUI(int stateAmount)
+    {
+        statesNDFA = new ArrayList<State>();
+        for (int i = 0; i < stateAmount; i++) {
+            State state = new State(Integer.toString(i));
+            statesNDFA.add(state);
+        }
+        return statesNDFA.toString();
+    }
+    
+    
+    
+    // Ask for initial state index in console
     public void setInitialState()
     {
         System.out.println("Coloque el indice del estado inicial:");
@@ -37,6 +49,18 @@ public class Automata {
         scanner.nextLine();
         initialState = new HashSet<State>();
         initialState.add(statesNDFA.get(in));
+    }
+    
+    // Ask for initial state index in GUI
+    public String setInitialStateGUI(int index)
+    {
+        initialState = new HashSet<State>();
+        initialState.add(statesNDFA.get(index));
+        for(State state : initialState)
+        {
+          return state.toString();
+        }
+        return "";
     }
     
     // Ask for amount and indices of acceptance states separated by comma
@@ -53,12 +77,34 @@ public class Automata {
         }
     }
     
+     // Get acceptance states from GUI
+    public String setAcceptanceStatesGUI(String indices)
+    {
+        String[] indicesArr = indices.split(","); 
+        finalStates = new HashSet<State>();
+    
+        for (String index : indicesArr)
+        {
+          
+            finalStates.add(statesNDFA.get(Integer.parseInt(index)));
+        }
+        return finalStates.toString();
+    }
+    
+    
     // Ask for amount and elements of the alphabet separated by comma
     public void setAlphabet()
     {
         System.out.println("Introduzca los simbolos del alfabeto separados por coma:");
         String symbols = scanner.nextLine();
         alphabet = symbols.split(","); 
+    }
+    
+    // Ask for alphabet elements in GUI
+    public String setAlphabetGUI(String symbols)
+    {
+        alphabet = symbols.split(","); 
+        return "[" + symbols + "]";
     }
     
     public void setTransitionTable()
