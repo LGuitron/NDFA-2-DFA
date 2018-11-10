@@ -166,7 +166,15 @@ void setup() {
 void draw() {
   update(mouseX, mouseY);
   background(150);
-  stroke(255);
+  fill(0,128,128);
+  rect(0,height/4,width,3*height/4);
+  fill(0);
+  textSize(48);
+  text("AFND", width/5, height/(3));
+  text("AFD",  width/2 + width/5, height/(3));
+  line(width/2, height/4, width/2, height);
+  textSize(16);
+  //stroke(255);
 
   setFillColor(statesOver);
   rect(statesButtonX, buttonY , buttonWidth, buttonHeight);
@@ -302,8 +310,8 @@ void instantiateBox(int index, String message) {
     width/4, height/4 + height/16, // x, y
     width/2, height/2 - height/4 - height/8, // w, h
     215, // lim
-    0300 << 030, color(-1, 040), // textC, baseC
-    color(-1, 0100), color(#FF00FF, 0200)); // bordC, slctC
+    0300 << 030, color(235,184,82), // textC, baseC
+    color(-1), color(-1)); // bordC, slctC
 }
 
 
@@ -643,7 +651,7 @@ void drawDFA()
               }
               
               // Draw arrow if nodes are different
-              if(stateSet.toString() != destinationSet.toString())
+              if(i != destIndex)
               {
                 int arrowOffsetX = (int)(-nodeWidth/2 * Math.cos(angle));
                 int arrowOffsetY = (int)(-nodeWidth/2 * Math.sin(angle));
@@ -668,28 +676,31 @@ void drawDFA()
        
       // Add "Loops" text on the right side if transition goes to the same node
       if(loopSymbols.size()>0){
-         text("loops: " + loopSymbols, xCoordsNDFA[i] + 0.75*nodeWidth, yCoordsNDFA[i]);
+         text("loops: " + loopSymbols, xCoordsDFA[i] + 0.75*nodeWidth, yCoordsDFA[i]);
       }
        
       // Draw arrow for initial state
-      for (State inState : automata.initialState)
+      if(stateSet.size()==1)
       {
-        for (State currentState : stateSet)
-        { 
-          
-          if(currentState.id == inState.id)
-          {
-            System.out.println("HERE");
-            line(xCoordsDFA[i] - 1.2*nodeWidth,yCoordsDFA[i],xCoordsDFA[i]- 0.5*nodeWidth,yCoordsDFA[i]);
-            pushMatrix();
-            translate(xCoordsDFA[i] - 0.5*nodeWidth, yCoordsDFA[i]);                                 
-            rotate((float)Math.PI/2);
-            triangle(tx1,ty1, tx2, ty23, tx3, ty23);
-            popMatrix();
+        for (State inState : automata.initialState)
+        {
+          for (State currentState : stateSet)
+          { 
+            
+            if(currentState.id == inState.id)
+            {
+              System.out.println("HERE");
+              line(xCoordsDFA[i] - 1.2*nodeWidth,yCoordsDFA[i],xCoordsDFA[i]- 0.5*nodeWidth,yCoordsDFA[i]);
+              pushMatrix();
+              translate(xCoordsDFA[i] - 0.5*nodeWidth, yCoordsDFA[i]);                                 
+              rotate((float)Math.PI/2);
+              triangle(tx1,ty1, tx2, ty23, tx3, ty23);
+              popMatrix();
+            }
+            break;
           }
-          break;
+         break;
         }
-       break;
       }
        
        
