@@ -5,7 +5,7 @@ import java.util.HashSet;
 public class Automata {
 
     private Scanner scanner;
-    private String[] alphabet;
+    public String[] alphabet;
     private HashSet<HashSet<State>> statesDFA;
     public ArrayList<State> statesNDFA;
     HashSet<State> initialState;
@@ -132,6 +132,21 @@ public class Automata {
         }
     }
     
+    public void addTransitionGUI(String transition)
+    {
+      String[] elements          = transition.split("|"); 
+      String i                  = elements[0];
+      String symbol             = elements[1]; 
+      String destinationIndices = elements[2]; 
+      String[] destinationIndicesArr = destinationIndices.split(",");
+      HashSet<State> destinations = new HashSet<State>();
+      for (String index : destinationIndicesArr)
+      {
+          destinations.add(statesNDFA.get(Integer.parseInt(index)));
+      }
+      statesNDFA.get(Integer.parseInt(i)).transitions.put(symbol, destinations);
+    }
+    
     public void convertToDFA()
     {
         statesDFA = new HashSet<HashSet<State>>();
@@ -215,9 +230,6 @@ public class Automata {
             
             for (String symbol : alphabet)
             {
-
-
-                
                 result += symbol + ": ";
                 result += findDestinationSetWithSymbol(originSet, symbol);
                 result += " | ";

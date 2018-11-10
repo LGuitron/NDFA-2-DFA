@@ -1,3 +1,5 @@
+import java.util.HashSet;
+
 // Automata Object
 Automata automata;
 
@@ -85,9 +87,9 @@ void setup() {
   instantiateBox(1, "Introduce el indice del estado inicial");
   instantiateBox(2, "Introduce los indices de los estados de aceptacion separados por comas");
   instantiateBox(3, "Introduce los simbolos del alfabeto separados por coma");
+  instantiateBox(4, "Introduce una transicion con el formato  origen|simbolo|destino   e.g.         0|s|1,2");
   
-  
-  for (int i=0; i<4; i++){
+  for (int i=0; i<5; i++){
     textBoxes[i].isFocused = true;
   }
   
@@ -341,6 +343,9 @@ class TextBox {
       else if(state == alphabetStateBox){
         alphabet = automata.setAlphabetGUI(txt); 
       }
+      else if(state == transitionStateBox){
+        automata.addTransitionGUI(txt); 
+      }
       
       state  = stateNormal; // close input box 
       
@@ -376,9 +381,6 @@ class TextBox {
   }
 }
 
-
-
-//========================
 // Function for drawing automata
 void drawNDFA()
 {
@@ -392,7 +394,24 @@ void drawNDFA()
       int offsetX = (int)(distFromCenter*Math.cos(currentAngle));
       int offsetY = (int)(distFromCenter*Math.sin(currentAngle));
       ellipse(centerX_NDFA + offsetX, centerY_NDFA + offsetY, nodeRadius, nodeRadius);
+      
       fill(0);
+      
+      // Checl there are elements in the alphabet
+      if(automata.alphabet != null)
+      {
+        // Draw arrows for each transition
+        for(String symbol : automata.alphabet)
+        {
+          HashSet<State> destinationStates = state.transitions.get(symbol);
+          if (destinationStates != null)
+          {
+            System.out.println("NOT NULL");
+            text(symbol + ": " + destinationStates.toString(), centerX_NDFA + offsetX - textOffsetX , centerY_NDFA + offsetY + 100); 
+            
+          }
+        }
+      }
       text(state.toString(), centerX_NDFA + offsetX - textOffsetX , centerY_NDFA + offsetY + textOffsetY); 
       fill(255,165,0);
       currentAngle += deltaAngle;
