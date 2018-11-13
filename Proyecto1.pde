@@ -554,12 +554,16 @@ void drawNDFA()
                 int arrowOffsetX = (int)(-nodeWidth/2 * Math.cos(angle));
                 int arrowOffsetY = (int)(-nodeWidth/2 * Math.sin(angle));
                 
-                line(x1, y1+verticalOffset, x2+arrowOffsetX, y2+arrowOffsetY+verticalOffset);
+                //line(x1, y1+verticalOffset, x2+arrowOffsetX, y2+arrowOffsetY+verticalOffset);
+                //line(x1, y1+verticalOffset, x2+arrowOffsetX - (float)(verticalOffset*Math.sin(angle)) , y2+arrowOffsetY + (float)(verticalOffset*Math.cos(angle)));
+                line(x1 - (float)(verticalOffset*Math.sin(angle)), y1+ (float)(verticalOffset*Math.cos(angle)), x2+arrowOffsetX - (float)(verticalOffset*Math.sin(angle)) , y2+arrowOffsetY + (float)(verticalOffset*Math.cos(angle)));
+                
                 text(symbol,(x1+x2)/2 , (y1+y2)/2 + verticalOffset);
                 
                 // Draw triangle in correct place by rotating and translating
                 pushMatrix();
-                translate(x2 + arrowOffsetX, y2 + arrowOffsetY+verticalOffset);                                 
+                //translate(x2 + arrowOffsetX, y2 + arrowOffsetY+verticalOffset);         
+                translate(x2 + arrowOffsetX - (float)(verticalOffset*Math.sin(angle)), y2 + arrowOffsetY + (float)(verticalOffset*Math.cos(angle)));
                 rotate((float)Math.PI/2 + angle);
                 triangle(tx1,ty1, tx2, ty23, tx3, ty23);
                 popMatrix();
@@ -656,12 +660,14 @@ void drawDFA()
                 int arrowOffsetX = (int)(-nodeWidth/2 * Math.cos(angle));
                 int arrowOffsetY = (int)(-nodeWidth/2 * Math.sin(angle));
                 
-                line(x1, y1+verticalOffset, x2+arrowOffsetX, y2+arrowOffsetY+verticalOffset);
+                //line(x1, y1+verticalOffset, x2+arrowOffsetX, y2+arrowOffsetY+verticalOffset);
+                line(x1 - (float)(verticalOffset*Math.sin(angle)), y1+ (float)(verticalOffset*Math.cos(angle)), x2+arrowOffsetX - (float)(verticalOffset*Math.sin(angle)) , y2+arrowOffsetY + (float)(verticalOffset*Math.cos(angle)));
                 text(symbol,(x1+x2)/2 , (y1+y2)/2 + verticalOffset);
                 
                 // Draw triangle in correct place by rotating and translating
                 pushMatrix();
-                translate(x2 + arrowOffsetX, y2 + arrowOffsetY+verticalOffset);                                 
+                //translate(x2 + arrowOffsetX, y2 + arrowOffsetY+verticalOffset);
+                translate(x2 + arrowOffsetX - (float)(verticalOffset*Math.sin(angle)), y2 + arrowOffsetY + (float)(verticalOffset*Math.cos(angle)));
                 rotate((float)Math.PI/2 + angle);
                 triangle(tx1,ty1, tx2, ty23, tx3, ty23);
                 popMatrix();
